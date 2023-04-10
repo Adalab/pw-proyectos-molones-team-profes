@@ -42,7 +42,7 @@ app.use(express.json({ limit: "10mb" }));
 app.set("view engine", "ejs");
 
 //arrancamos el servidor
-const port = 4001;
+const serverPort = process.env.PORT || 4000;
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
 });
