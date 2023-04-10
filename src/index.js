@@ -43,7 +43,7 @@ app.set("view engine", "ejs");
 
 //arrancamos el servidor
 const serverPort = process.env.PORT || 4000;
-app.listen(port, () => {
+app.listen(serverPort, () => {
     console.log(`App listening on port ${serverPort}`);
 });
 
