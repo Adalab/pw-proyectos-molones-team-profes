@@ -1,6 +1,6 @@
 const dataApi = (data) => {
     return fetch(
-        "http://localhost:4001/api/projects/add",
+        "https://proyectos-molones-profes.onrender.com/api/projects/add",
         {
             method: "POST",
             body: JSON.stringify(data),
@@ -17,7 +17,7 @@ const dataApi = (data) => {
 //obtener el listado 
 const listProjectsApi = () => {
     return fetch(
-        "http://localhost:4001/api/projects/all"
+        "https://proyectos-molones-profes.onrender.com/api/projects/all"
     ).then(response => response.json())
         .then(data => {
             return data;

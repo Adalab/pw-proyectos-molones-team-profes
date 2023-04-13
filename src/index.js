@@ -4,7 +4,14 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
+const swaggerUi = require('swagger-ui-express');
 
+const Autor = require("../models/autor");
+const Project = require("../models/project");
+
+
+const dbConnect = require("../config/conexion");
+dbConnect();
 
 //variable guardar la conexión 
 let connection;
@@ -41,8 +48,13 @@ app.use(express.json({ limit: "10mb" }));
 //configurar el motor de plantillas
 app.set("view engine", "ejs");
 
+const swaggerFile = require('./swagger.json');
+
+//Especificar en el server use
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
 //arrancamos el servidor
-const serverPort = process.env.PORT || 4000;
+const serverPort = process.env.PORT || 4002;
 app.listen(serverPort, () => {
     console.log(`App listening on port ${serverPort}`);
 });
@@ -89,6 +101,8 @@ app.post("/api/projects/add", (req, res) => {
     let sqlAutor = "INSERT INTO autors (autor, job, photo, createdAt) VALUES (?, ?, ?, ?) ";
     let valuesAutor = [data.autor, data.job, data.photo, createdAt];
 
+
+
     connection
         .query(sqlAutor, valuesAutor)
         .then(([results, fields]) => {
@@ -110,7 +124,7 @@ app.post("/api/projects/add", (req, res) => {
                 .then(([results, fields]) => {
                     let response = {
                         success: true,
-                        cardURL: `http://localhost:4001/api/projects/${results.insertId}`
+                        cardURL: `https://proyectos-molones-profes.onrender.com/api/projects/${results.insertId}`
                     }
                     res.json(response);
                 })
@@ -120,6 +134,37 @@ app.post("/api/projects/add", (req, res) => {
         }).catch((err) => {
             throw err;
         });
+
+
+    //insertando en mongo
+    /* let valuesAutora = { autor: data.autor, job: data.job, photo: data.photo, createdA: createdAt };
+ 
+     Autor.create(valuesAutora)
+         .then((doc) => {
+             console.log(doc);
+             let valuesProject = {
+                 name: data.name,
+                 slogan: data.slogan,
+                 technologies: data.technologies,
+                 demo: data.demo,
+                 repo: data.repo,
+                 desc: data.desc,
+                 image: data.image,
+                 createdAt: data.createdAt,
+                 id_autor_fk: doc._id
+             }
+             //insertar proyecto
+             Project.create(valuesProject)
+                 .then((doc) => {
+                     let response = {
+                         success: true,
+                         cardURL: `http://localhost:4002/api/projects/${doc._id}`
+                     }
+                     res.json(response);
+                 })
+ 
+         })*/
+
 });
 
 
