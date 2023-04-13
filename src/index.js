@@ -59,7 +59,6 @@ app.listen(serverPort, () => {
     console.log(`App listening on port ${serverPort}`);
 });
 
-
 //Enpoints 
 // metodo: get, post, put, delete, patch
 //server.metodo(ruta, (req, res)=>{}))
@@ -72,11 +71,6 @@ app.get("/api/projects/all", (req, res) => {
     connection
         .query(sql)
         .then(([results, fields]) => {
-            console.log('Información recuperada:');
-            results.forEach((result) => {
-                console.log(result);
-            });
-
             res.json(results);
         })
         .catch((err) => {
