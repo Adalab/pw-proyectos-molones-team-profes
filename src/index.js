@@ -6,12 +6,12 @@ const cors = require('cors');
 const mysql = require('mysql2/promise');
 const swaggerUi = require('swagger-ui-express');
 
+/*
 const Autor = require("../models/autor");
 const Project = require("../models/project");
-
-
 const dbConnect = require("../config/conexion");
 dbConnect();
+*/
 
 //variable guardar la conexión 
 let connection;
