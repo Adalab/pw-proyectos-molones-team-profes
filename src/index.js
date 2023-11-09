@@ -2,6 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger.json");
 
 //Crear servidor
 const app = express();
@@ -10,6 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "25mb" }));
 app.set("view engine", "ejs");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 async function getConnection() {
   //crear y configurar la conexión.
@@ -24,7 +27,7 @@ async function getConnection() {
 }
 //Puerto del servidor
 
-const appPort = 3110;
+const appPort = 3112;
 app.listen(appPort, () => {
   console.log(`Server listening at http://localhost:${appPort}`);
 });

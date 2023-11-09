@@ -1,0 +1,110 @@
+{
+    "openapi": "3.0.0", 
+    "info": {
+        "title": "Proyectos API",
+        "version": "1.0.0",
+        "description": "API para la gestión de proyectos y autores"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3112",
+            "description": "Servidor de desarrollo"
+        }
+    ],
+    "paths": {
+        "/listproject": {
+            "get": {
+                "summary": "Lista todos los proyectos",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "projects": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Project"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/createproject": {
+            "post": {
+                "summary": "Crea un nuevo proyecto",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NewProject"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Proyecto creado exitosamente"
+                    }
+                }
+            }
+        },
+        "/project/{idproject}": {
+            "get": {
+                "summary": "Obtiene detalles de un proyecto específico",
+                "parameters": [
+                    {
+                        "name": "idproject",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa"
+                    },
+                    "404": {
+                        "description": "Proyecto no encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Project": {
+                "type": "object",
+                "properties": {
+                    "idProject": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "NewProject": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "slogan": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
