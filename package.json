@@ -1,21 +1,21 @@
 {
-  "name": "promo-s-module-4-team-profes",
+  "name": "project-promo-u-module-4-team-5",
   "version": "1.0.0",
-  "description": "proyectos molones ",
+  "description": "Rocket Projects",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "publish-react": "cd web && npm run build && cd .. && rm -rf ./src/public-react && mv ./web/build ./src/public-react"
+    "publish-react": "cd web && npm run build && cd .. && rm -rf ./src/public-react && mv ./web/dist ./src/public-react"
+
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
-    "mysql2": "^3.2.0",
-    "swagger-ui-express": "^4.6.2"
+    "mysql2": "^3.6.3"
   }
 }

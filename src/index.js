@@ -1,208 +1,100 @@
-//crear y configurar el servidor
+//Importar dependencias
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
 
-//importamos todos los módulos que necesitamos
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql2/promise');
-const swaggerUi = require('swagger-ui-express');
-
-/*
-const Autor = require("../models/autor");
-const Project = require("../models/project");
-const dbConnect = require("../config/conexion");
-dbConnect();
-*/
-
-//variable guardar la conexión 
-let connection;
-
-//crear la conexión
-mysql
-    .createConnection({
-        host: 'sql.freedb.tech',
-        database: 'freedb_projects-adalab',
-        user: 'freedb_root-adalab',
-        password: 'Kc8vbqDh74#*uBz',
-    })
-    .then(conn => {
-        connection = conn;
-        connection
-            .connect()
-            .then(() => {
-                console.log(`Conexión establecida con la base de datos (identificador=${connection.threadId})`);
-            })
-            .catch((err) => {
-                console.error('Error de conexion: ' + err.stack);
-            });
-    })
-    .catch((err) => {
-        console.error('Error de configuración: ' + err.stack);
-    });
-
-//Configurar el servidor
+//Crear servidor
 const app = express();
-app.use(cors());
-//para especificar el tamaño del servidor
-app.use(express.json({ limit: "10mb" }));
 
-//configurar el motor de plantillas
+//Configurar servidor
+app.use(cors());
+app.use(express.json({ limit: "25mb" }));
 app.set("view engine", "ejs");
 
-const swaggerFile = require('./swagger.json');
+async function getConnection() {
+  //crear y configurar la conexión.
+  const connection = await mysql.createConnection({
+    host: "sql.freedb.tech",
+    user: "freedb_rocketadmin",
+    password: "xvzNgcE4V3@F5dg",
+    database: "freedb_rocket_projects",
+  });
+  connection.connect();
+  return connection;
+}
+//Puerto del servidor
 
-//Especificar en el server use
-app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
-
-//arrancamos el servidor
-const serverPort = process.env.PORT || 4002;
-app.listen(serverPort, () => {
-    console.log(`App listening on port ${serverPort}`);
+const appPort = 3110;
+app.listen(appPort, () => {
+  console.log(`Server listening at http://localhost:${appPort}`);
 });
 
-//Enpoints 
-// metodo: get, post, put, delete, patch
-//server.metodo(ruta, (req, res)=>{}))
-//req: información de la petición
-//res: enviar una respuest
-
-//Listar proyectos
-app.get("/api/projects/all", (req, res) => {
-    let sql = 'SELECT * FROM projects, autors WHERE projects.idautor_fk = autors.idautors;';
-    connection
-        .query(sql)
-        .then(([results, fields]) => {
-            res.json(results);
-        })
-        .catch((err) => {
-            throw err;
-        });
+//Endpoint para todos los proyectos
+app.get("/listproject", async (req, res) => {
+  const conn = await getConnection();
+  // const query ='SELECT * FROM autor, projects WHERE projects.fk_autor = autor.idAutor ORDER BY idProject desc;';
+  const query =
+    "SELECT * FROM autor INNER JOIN projects ON projects.fk_autor = autor.idAutor ORDER BY idProject desc;";
+  const [results] = await conn.query(query);
+  conn.end();
+  res.json({
+    success: true,
+    projects: results,
+  });
 });
 
-//Insertar un proyecto Endpoint /projects/add
-app.post("/api/projects/add", (req, res) => {
-    //1. ¿de donde vienen y por donde viene los datos?
-    const data = req.body;
-    console.log(data);
+app.post("/createproject", async (req, res) => {
+  const body = req.body;
+  const conn = await getConnection();
 
-    let createdAt = Date.now();
+  const insertUser = "INSERT INTO autor (author, image, job) values (?, ?, ?);";
 
-    //3. validar que todos los datos existen 
+  const [resultUser] = await conn.query(insertUser, [
+    body.autor,
+    body.image,
+    body.job,
+  ]);
+  console.log(resultUser);
 
-    // 2. Insertar en la bd
-    //2.1  Consulta sql projectos y autoras
+  const idNewUser = resultUser.insertId;
 
-    //insertando la autora
-    let sqlAutor = "INSERT INTO autors (autor, job, photo, createdAt) VALUES (?, ?, ?, ?) ";
-    let valuesAutor = [data.autor, data.job, data.photo, createdAt];
+  const insertProject =
+    "INSERT INTO projects (name, slogan, repo, demo, technologies, `desc`, photo, fk_autor) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
+  const [resultProject] = await conn.query(insertProject, [
+    body.name,
+    body.slogan,
+    body.repo,
+    body.demo,
+    body.technologies,
+    body.desc,
+    body.photo,
+    idNewUser,
+  ]);
 
+  conn.end();
 
-    connection
-        .query(sqlAutor, valuesAutor)
-        .then(([results, fields]) => {
-            console.log(results);
-            let sqlProject = "INSERT INTO projects (name, slogan, technologies,demo, repo, `desc`, image, createdAT, idautor_fk ) VALUES (?, ?, ?, ?,?,?,?,?,?) ";
-            let valuesProject = [
-                data.name,
-                data.slogan,
-                data.technologies,
-                data.demo,
-                data.repo,
-                data.desc,
-                data.image,
-                createdAt,
-                results.insertId];
-
-            connection
-                .query(sqlProject, valuesProject)
-                .then(([results, fields]) => {
-                    let response = {
-                        success: true,
-                        cardURL: `https://proyectos-molones-profes.onrender.com/api/projects/${results.insertId}`
-                    }
-                    res.json(response);
-                })
-                .catch((err) => {
-                    throw err;
-                });
-        }).catch((err) => {
-            throw err;
-        });
-
-
-    //insertando en mongo
-    /* let valuesAutora = { autor: data.autor, job: data.job, photo: data.photo, createdA: createdAt };
- 
-     Autor.create(valuesAutora)
-         .then((doc) => {
-             console.log(doc);
-             let valuesProject = {
-                 name: data.name,
-                 slogan: data.slogan,
-                 technologies: data.technologies,
-                 demo: data.demo,
-                 repo: data.repo,
-                 desc: data.desc,
-                 image: data.image,
-                 createdAt: data.createdAt,
-                 id_autor_fk: doc._id
-             }
-             //insertar proyecto
-             Project.create(valuesProject)
-                 .then((doc) => {
-                     let response = {
-                         success: true,
-                         cardURL: `http://localhost:4002/api/projects/${doc._id}`
-                     }
-                     res.json(response);
-                 })
- 
-         })*/
-
+  res.json({
+    success: true,
+    cardURL: "http://localhost:3110/project/" + resultProject.insertId,
+  });
 });
 
-
-//Servidor de dinámicos
-//detalle de una tarjeta
-/**
- * 1. Instalr ejs
- * 2. Configurar el ejs: app.set("view engine", "ejs");
- * 3. Crear la carpeta de views y dentro la vista con un nombre desc
- * 4. Dentro del endpoint donde voy apintr la vista dinamica hago un res.render (nombre de la vista, datos que le voy pasar):    res.render("project_detail", results[0]);
- * 5. Crear el contenido de la vista: creo un html con el inspector y el OUTERHTML
- * 6. Creo un servidor de ficheros estaticos de css
- * 7. Creo un servidor de ficheros estaticos de imagenes
- * 8. Linkeo el css en la vista 
- * 9. Relleno los datos en HTML en la vista donde corresponde
- */
-
-
-app.get("/api/projects/detail/:projectID", (req, res) => {
-    const projectId = req.params.projectID;
-
-    const sql = "SELECT * FROM projects, autors WHERE projects.idautor_fk=autors.idautors and idprojects = ?"
-
-    connection
-        .query(sql, [projectId])
-        .then(([results, fields]) => {
-            res.render("project_detail", results[0]);
-        })
-        .catch((err) => {
-            throw err;
-        });
+app.get("/project/:idproject", async (req, res) => {
+  const id = req.params.idproject;
+  const selectProject =
+    "SELECT * FROM autor, projects WHERE projects.fk_autor = autor.idAutor AND idproject = ?";
+  const conn = await getConnection();
+  const [results] = await conn.query(selectProject, [id]);
+  if (results.length === 0) {
+    res.render("notFound");
+  } else {
+    res.render("detailProject", results[0]);
+  }
 });
 
+const staticAppPath = "./src/public-react";
+app.use(express.static(staticAppPath));
 
-
-//Servidor de estáticos
-/*
-1. Copiar el scrip de publish-react en el package.json
-2. Ejecutar en la terminal del servidor: npm run publish-react
-3. Comprobar creado correctamente la carpeta
-4. Confu¡igurar en el servidor los ficheros estáticos
-*/
-app.use(express.static('./src/public-react'));
-
-app.use(express.static('./src/public-css/'));
-
-
+const pathServerPublicStyles = "./src/public-css";
+app.use(express.static(pathServerPublicStyles));
